@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "bogus_efcore": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
