@@ -31,7 +31,7 @@ internal class EventMap : IEntityTypeConfiguration<Event>
         var events = new Faker<Event>()
             .RuleFor(x => x.Id, f => id++)
             .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-            .RuleFor(x => x.Date, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2022, 12, 16, 15, 15, 0, TimeSpan.FromHours(1)))));
+            .RuleFor(x => x.Date, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2022, 12, 16, 15, 15, 0, TimeSpan.FromHours(1))));
         
         builder.HasData(events.UseSeed(1338).Generate(1000));
     }
