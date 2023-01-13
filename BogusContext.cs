@@ -7,9 +7,10 @@ namespace bogus_efcore;
 
 public class BogusContext : DbContext
 {
-    public DbSet<Product> Products { get; set; }
-    public DbSet<ProductProductCategory> ProductProductCategories { get; set; }
-    public DbSet<ProductCategory> ProductCategories { get; set; }
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+
+    public DbSet<ProductProductCategory> ProductProductCategories => Set<ProductProductCategory>();
 
     public BogusContext(DbContextOptions<BogusContext> options): base(options)
     {
@@ -20,6 +21,32 @@ public class BogusContext : DbContext
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
         modelBuilder.ApplyConfiguration(new ProductProductCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ProductCategoryConfiguration());
+
+        var categoryId = 1;
+        var categoryFaker = new Faker<ProductCategory>()
+            .RuleFor(x => x.Id, f => categoryId++)
+            .RuleFor(x => x.Name, f => f.Commerce.Categories(1).First());
+
+        var categories = categoryFaker.UseSeed(1338).Generate(50);
+
+        var productId = 1;
+        var productFaker = new Faker<Product>()
+            .RuleFor(x => x.Id, f => productId++)
+            .RuleFor(x => x.Name, f => f.Commerce.ProductName())
+            .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))));
+
+        var products = productFaker.UseSeed(1338).Generate(1000);
+
+        var productProductCategoryFaker = new Faker<ProductProductCategory>()
+            .RuleFor(x => x.ProductId, f => f.PickRandom(products).Id)
+            .RuleFor(x => x.CategoryId, f => f.PickRandom(categories).Id);
+
+        var productProductCategories = productProductCategoryFaker.UseSeed(1338).Generate(1000)
+            .GroupBy(x => new { x.ProductId, x.CategoryId }).Select(x => x.First()).ToList();
+
+        modelBuilder.Entity<Product>().HasData(products);
+        modelBuilder.Entity<ProductCategory>().HasData(categories);
+        modelBuilder.Entity<ProductProductCategory>().HasData(productProductCategories);
 
         base.OnModelCreating(modelBuilder);
     }
@@ -33,19 +60,6 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.CreationDate).IsRequired();
-
-        //var categoryId = 1;
-        //var categoryFaker = new Faker<ProductCategory>()
-        //    .RuleFor(x => x.Id, f => categoryId++)
-        //    .RuleFor(x => x.Name, f => f.Commerce.Categories(1).First());
-
-        //var productId = 1;
-        //var productFaker = new Faker<Product>()
-        //    .RuleFor(x => x.Id, f => productId++)
-        //    .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-        //    .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))));
-
-        //builder.HasData(productFaker.UseSeed(1338).Generate(100));
     }
 }
 
@@ -56,14 +70,6 @@ internal class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCa
         builder.ToTable("ProductCategory");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
-
-        //var id = 1;
-        //var events = new Faker<ProductCategory>()
-        //    .RuleFor(x => x.Id, f => id++)
-        //    .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-        //    .RuleFor(x => x.Date, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2022, 12, 16, 15, 15, 0, TimeSpan.FromHours(1))));
-
-        //builder.HasData(events.UseSeed(1338).Generate(1000));
     }
 }
 
