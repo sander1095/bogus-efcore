@@ -59,34 +59,43 @@ namespace bogus_efcore.Migrations
                     b.ToTable("ProductCategory", (string)null);
                 });
 
-            modelBuilder.Entity("ProductProductCategory", b =>
+            modelBuilder.Entity("bogus_efcore.ProductProductCategory", b =>
                 {
-                    b.Property<int>("CategoriesId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductsId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.HasKey("CategoriesId", "ProductsId");
+                    b.HasKey("ProductId", "CategoryId");
 
-                    b.HasIndex("ProductsId");
+                    b.HasIndex("CategoryId");
 
-                    b.ToTable("ProductProductCategory");
+                    b.ToTable("ProductProductCategory", (string)null);
                 });
 
-            modelBuilder.Entity("ProductProductCategory", b =>
+            modelBuilder.Entity("bogus_efcore.ProductProductCategory", b =>
                 {
-                    b.HasOne("bogus_efcore.ProductCategory", null)
+                    b.HasOne("bogus_efcore.ProductCategory", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoriesId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("bogus_efcore.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductsId")
+                    b.HasOne("bogus_efcore.Product", "Product")
+                        .WithMany("ProductProductCategories")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("bogus_efcore.Product", b =>
+                {
+                    b.Navigation("ProductProductCategories");
                 });
 #pragma warning restore 612, 618
         }

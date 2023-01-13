@@ -8,6 +8,7 @@ namespace bogus_efcore;
 public class BogusContext : DbContext
 {
     public DbSet<Product> Products { get; set; }
+    public DbSet<ProductProductCategory> ProductProductCategories { get; set; }
     public DbSet<ProductCategory> ProductCategories { get; set; }
 
     public BogusContext(DbContextOptions<BogusContext> options): base(options)
@@ -17,6 +18,7 @@ public class BogusContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
+        modelBuilder.ApplyConfiguration(new ProductProductCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ProductCategoryConfiguration());
 
         base.OnModelCreating(modelBuilder);
@@ -31,7 +33,6 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.CreationDate).IsRequired();
-        builder.HasMany(x => x.Categories).WithMany(x => x.Products);
 
         //var categoryId = 1;
         //var categoryFaker = new Faker<ProductCategory>()
@@ -42,9 +43,8 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         //var productFaker = new Faker<Product>()
         //    .RuleFor(x => x.Id, f => productId++)
         //    .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-        //    .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))))
-        //    .RuleFor(x => x.Categories, f => categoryFaker.GenerateBetween(0, 4));
-        
+        //    .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))));
+
         //builder.HasData(productFaker.UseSeed(1338).Generate(100));
     }
 }
@@ -67,3 +67,20 @@ internal class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCa
     }
 }
 
+internal class ProductProductCategoryConfiguration : IEntityTypeConfiguration<ProductProductCategory>
+{
+    public void Configure(EntityTypeBuilder<ProductProductCategory> builder)
+    {
+        builder.ToTable("ProductProductCategory");
+
+        builder.HasKey(x => new { x.ProductId, x.CategoryId });
+
+        builder.HasOne(x => x.Product)
+            .WithMany(x => x.ProductProductCategories)
+            .HasForeignKey(x => x.ProductId);
+
+        builder.HasOne(b => b.Category)
+            .WithMany()
+            .HasForeignKey(x => x.CategoryId);
+    }
+}

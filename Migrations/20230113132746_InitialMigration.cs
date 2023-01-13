@@ -40,30 +40,30 @@ namespace bogus_efcore.Migrations
                 name: "ProductProductCategory",
                 columns: table => new
                 {
-                    CategoriesId = table.Column<int>(type: "int", nullable: false),
-                    ProductsId = table.Column<int>(type: "int", nullable: false)
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductProductCategory", x => new { x.CategoriesId, x.ProductsId });
+                    table.PrimaryKey("PK_ProductProductCategory", x => new { x.ProductId, x.CategoryId });
                     table.ForeignKey(
-                        name: "FK_ProductProductCategory_Product_ProductsId",
-                        column: x => x.ProductsId,
+                        name: "FK_ProductProductCategory_Product_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductProductCategory_ProductCategory_CategoriesId",
-                        column: x => x.CategoriesId,
+                        name: "FK_ProductProductCategory_ProductCategory_CategoryId",
+                        column: x => x.CategoryId,
                         principalTable: "ProductCategory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductProductCategory_ProductsId",
+                name: "IX_ProductProductCategory_CategoryId",
                 table: "ProductProductCategory",
-                column: "ProductsId");
+                column: "CategoryId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
