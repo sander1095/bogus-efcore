@@ -33,7 +33,8 @@ public class BogusContext : DbContext
         var productFaker = new Faker<Product>()
             .RuleFor(x => x.Id, f => productId++)
             .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-            .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))));
+            .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))))
+            .RuleFor(x => x.Description, f => f.Commerce.ProductDescription()); // This is added to the last line, and we are using a local seed (1338) so it shouldn't change the Name and CreationDate properties
 
         var products = productFaker.UseSeed(1338).Generate(1000);
 
@@ -60,6 +61,7 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).IsRequired();
         builder.Property(x => x.CreationDate).IsRequired();
+        builder.Property(x => x.Description).IsRequired();
     }
 }
 
