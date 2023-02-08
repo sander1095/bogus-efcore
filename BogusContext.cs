@@ -27,7 +27,9 @@ public class BogusContext : DbContext
             .RuleFor(x => x.Id, f => categoryId++)
             .RuleFor(x => x.Name, f => f.Commerce.Categories(1).First());
 
-        var categories = categoryFaker.UseSeed(1338).Generate(50);
+        var categories = Enumerable.Range(1, 50)
+            .Select(i => SeedRow(categoryFaker, i))
+            .ToList();
 
         var productId = 1;
         var productFaker = new Faker<Product>()
@@ -35,20 +37,31 @@ public class BogusContext : DbContext
             .RuleFor(x => x.Name, f => f.Commerce.ProductName())
             .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))));
 
-        var products = productFaker.UseSeed(1338).Generate(1000);
+        var products = Enumerable.Range(1, 1000)
+            .Select(i => SeedRow(productFaker, i))
+            .ToList();
 
         var productProductCategoryFaker = new Faker<ProductProductCategory>()
             .RuleFor(x => x.ProductId, f => f.PickRandom(products).Id)
             .RuleFor(x => x.CategoryId, f => f.PickRandom(categories).Id);
 
-        var productProductCategories = productProductCategoryFaker.UseSeed(1338).Generate(1000)
-            .GroupBy(x => new { x.ProductId, x.CategoryId }).Select(x => x.First()).ToList();
+        var productProductCategories = Enumerable.Range(1, 1000)
+            .Select(i => SeedRow(productProductCategoryFaker, i))
+            .GroupBy(x => new { x.ProductId, x.CategoryId })
+            .Select(x => x.First())
+            .ToList();
 
         modelBuilder.Entity<Product>().HasData(products);
         modelBuilder.Entity<ProductCategory>().HasData(categories);
         modelBuilder.Entity<ProductProductCategory>().HasData(productProductCategories);
 
         base.OnModelCreating(modelBuilder);
+
+        static T SeedRow<T>(Faker<T> faker, int rowId) where T : class
+        {
+            var recordRow = faker.UseSeed(rowId).Generate();
+            return recordRow;
+        };
     }
 }
 
