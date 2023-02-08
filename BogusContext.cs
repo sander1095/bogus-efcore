@@ -1,5 +1,3 @@
-using Bogus;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,60 +7,26 @@ public class BogusContext : DbContext
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
-
     public DbSet<ProductProductCategory> ProductProductCategories => Set<ProductProductCategory>();
 
-    public BogusContext(DbContextOptions<BogusContext> options): base(options)
-    {
-    }
+    public BogusContext(DbContextOptions<BogusContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Configure the tables
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
         modelBuilder.ApplyConfiguration(new ProductProductCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ProductCategoryConfiguration());
 
-        var categoryId = 1;
-        var categoryFaker = new Faker<ProductCategory>()
-            .RuleFor(x => x.Id, f => categoryId++)
-            .RuleFor(x => x.Name, f => f.Commerce.Categories(1).First());
+        // Generate seed data with Bogus
+        var databaseSeeder = new DatabaseSeeder();
 
-        var categories = Enumerable.Range(1, 50)
-            .Select(i => SeedRow(categoryFaker, i))
-            .ToList();
-
-        var productId = 1;
-        var productFaker = new Faker<Product>()
-            .RuleFor(x => x.Id, f => productId++)
-            .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-            .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))))
-            .RuleFor(x => x.Description, f => f.Commerce.ProductDescription());
-
-        var products = Enumerable.Range(1, 1000)
-            .Select(i => SeedRow(productFaker, i))
-            .ToList();
-
-        var productProductCategoryFaker = new Faker<ProductProductCategory>()
-            .RuleFor(x => x.ProductId, f => f.PickRandom(products).Id)
-            .RuleFor(x => x.CategoryId, f => f.PickRandom(categories).Id);
-
-        var productProductCategories = Enumerable.Range(1, 1000)
-            .Select(i => SeedRow(productProductCategoryFaker, i))
-            .GroupBy(x => new { x.ProductId, x.CategoryId })
-            .Select(x => x.First())
-            .ToList();
-
-        modelBuilder.Entity<Product>().HasData(products);
-        modelBuilder.Entity<ProductCategory>().HasData(categories);
-        modelBuilder.Entity<ProductProductCategory>().HasData(productProductCategories);
+        // Apply the seed data on the tables
+        modelBuilder.Entity<Product>().HasData(databaseSeeder.Products);
+        modelBuilder.Entity<ProductCategory>().HasData(databaseSeeder.ProductCategories);
+        modelBuilder.Entity<ProductProductCategory>().HasData(databaseSeeder.ProductProductCategories);
 
         base.OnModelCreating(modelBuilder);
-
-        static T SeedRow<T>(Faker<T> faker, int rowId) where T : class
-        {
-            var recordRow = faker.UseSeed(rowId).Generate();
-            return recordRow;
-        };
     }
 }
 
