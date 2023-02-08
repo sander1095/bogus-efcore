@@ -24,7 +24,8 @@ namespace bogus_efcore
                 // The refDate is very important! Without it, it will generate a random date based on the CURRENT date on your system.
                 // Generating a date based on the system date is not deterministic!
                 // So the solution is to pass in a constant date instead which will be used to generate a random date
-                .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))))
+                .RuleFor(x => x.CreationDate, f => f.Date.FutureOffset(
+                    refDate: new DateTimeOffset(2023, 1, 16, 15, 15, 0, TimeSpan.FromHours(1))))
                 .RuleFor(x => x.Description, f => f.Commerce.ProductDescription());
 
             var products = Enumerable.Range(1, amount)
@@ -48,7 +49,10 @@ namespace bogus_efcore
             return categories;
         }
 
-        private static IReadOnlyCollection<ProductProductCategory> GenerateProductProductCategories(int amount, IEnumerable<Product> products, IEnumerable<ProductCategory> productCategories)
+        private static IReadOnlyCollection<ProductProductCategory> GenerateProductProductCategories(
+            int amount,
+            IEnumerable<Product> products,
+            IEnumerable<ProductCategory> productCategories)
         {
             // Now we set up the faker for our join table.
             // We do this by grabbing a random product and category that were generated.
